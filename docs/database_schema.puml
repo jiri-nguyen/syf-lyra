@@ -1,0 +1,138 @@
+@startuml linear_clone_schema
+
+' ── Styling ──────────────────────────────────────────────
+skinparam linetype ortho
+skinparam roundcorner 8
+skinparam defaultFontName Arial
+skinparam defaultFontSize 12
+
+skinparam entity {
+  BackgroundColor #F8F8F8
+  BorderColor #888780
+  FontColor #2C2C2A
+  HeaderBackgroundColor #E6F1FB
+  HeaderFontColor #0C447C
+}
+
+skinparam arrow {
+  Color #73726c
+  FontColor #5F5E5A
+  FontSize 11
+}
+
+' ── Entities ─────────────────────────────────────────────
+
+entity "users" {
+  * id : UUID <<PK>>
+  --
+  * email : VARCHAR(255) <<UNIQUE>>
+  * hashed_password : VARCHAR
+  * full_name : VARCHAR(100)
+  avatar_url : TEXT
+  * created_at : TIMESTAMP
+  * updated_at : TIMESTAMP
+}
+
+entity "workspaces" {
+  * id : UUID <<PK>>
+  --
+  * name : VARCHAR(100)
+  * slug : VARCHAR(50) <<UNIQUE>>
+  * owner_id : UUID <<FK>>
+  * created_at : TIMESTAMP
+  * updated_at : TIMESTAMP
+}
+
+entity "workspace_members" {
+  * workspace_id : UUID <<FK>>
+  * user_id : UUID <<FK>>
+  --
+  * role : VARCHAR(20)
+  ' values: admin | member
+  * joined_at : TIMESTAMP
+}
+
+entity "projects" {
+  * id : UUID <<PK>>
+  --
+  * workspace_id : UUID <<FK>>
+  * name : VARCHAR(100)
+  description : TEXT
+  * identifier : VARCHAR(10)
+  ' e.g. ENG, DESIGN → used in issue keys
+  * created_at : TIMESTAMP
+  * updated_at : TIMESTAMP
+}
+
+entity "issues" {
+  * id : UUID <<PK>>
+  --
+  * project_id : UUID <<FK>>
+  * title : VARCHAR(255)
+  description : TEXT
+  * status : VARCHAR(30)
+  ' todo | in_progress | in_review | done | cancelled
+  * priority : VARCHAR(20)
+  ' no_priority | urgent | high | medium | low
+  assignee_id : UUID <<FK>>
+  * created_by : UUID <<FK>>
+  * sort_order : INTEGER
+  ' used for ordering within a Kanban column
+  due_date : TIMESTAMP
+  * created_at : TIMESTAMP
+  * updated_at : TIMESTAMP
+}
+
+entity "comments" {
+  * id : UUID <<PK>>
+  --
+  * issue_id : UUID <<FK>>
+  * author_id : UUID <<FK>>
+  * content : TEXT
+  * created_at : TIMESTAMP
+  * updated_at : TIMESTAMP
+}
+
+entity "labels" {
+  * id : UUID <<PK>>
+  --
+  * workspace_id : UUID <<FK>>
+  * name : VARCHAR(50)
+  * color : VARCHAR(7)
+  ' hex color e.g. #FF5733
+}
+
+entity "issue_labels" {
+  * issue_id : UUID <<FK>>
+  * label_id : UUID <<FK>>
+}
+
+entity "notifications" {
+  * id : UUID <<PK>>
+  --
+  * user_id : UUID <<FK>>
+  * issue_id : UUID <<FK>>
+  * type : VARCHAR(30)
+  ' assigned | commented | mentioned
+  * read : BOOLEAN
+  * created_at : TIMESTAMP
+}
+
+' ── Relationships ─────────────────────────────────────────
+
+users          ||--o{ workspaces         : "owns"
+users          ||--o{ workspace_members  : "joins"
+workspaces     ||--o{ workspace_members  : "has members"
+workspaces     ||--o{ projects           : "contains"
+workspaces     ||--o{ labels             : "defines"
+projects       ||--o{ issues             : "tracks"
+users          |o--o{ issues             : "assignee"
+users          ||--o{ issues             : "created by"
+issues         ||--o{ comments           : "has"
+users          ||--o{ comments           : "writes"
+issues         ||--o{ issue_labels       : "tagged with"
+labels         ||--o{ issue_labels       : "used in"
+users          ||--o{ notifications      : "receives"
+issues         ||--o{ notifications      : "triggers"
+
+@enduml

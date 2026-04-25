@@ -1,0 +1,20 @@
+from fastapi import FastAPI
+
+from app.auth.router import router as auth_router
+from app.users.router import router as users_router
+from app.workspaces.router import router as workspaces_router
+from app.projects.router import router as projects_router
+from app.issues.router import router as issues_router
+
+app = FastAPI(title="Linear Clone")
+
+app.include_router(auth_router)
+app.include_router(users_router)
+app.include_router(workspaces_router)
+app.include_router(projects_router)
+app.include_router(issues_router)
+
+
+@app.get("/health")
+async def health():
+    return {"status": "ok"}

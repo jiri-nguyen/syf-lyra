@@ -1,0 +1,31 @@
+services:
+
+  db:
+    image: postgres:15.1-bullseye
+    command: ["postgres", "-c", "max_locks_per_transaction=256"]
+    environment:
+      - POSTGRES_USER=linear
+      - POSTGRES_PASSWORD=linear
+      - POSTGRES_DB=linear
+      - POSTGRES_PORT=5432
+    volumes:
+      - postgres_data:/var/lib/postgresql/data/
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "pg_isready",
+          "-q",
+          "-d",
+          "linear",
+          "-U",
+          "linear",
+        ]
+      timeout: 40s
+      interval: 2s
+      retries: 20
+
+volumes:
+  postgres_data:
