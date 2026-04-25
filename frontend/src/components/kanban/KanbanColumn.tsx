@@ -22,14 +22,14 @@ const STATUS_LABELS: Record<Issue["status"], string> = {
 interface Props {
   status: Issue["status"];
   issues: Issue[];
+  projectId: string; // ← thêm
 }
 
-export default function KanbanColumn({ status, issues }: Props) {
+export default function KanbanColumn({ status, issues, projectId }: Props) {
   const { setNodeRef, isOver } = useDroppable({ id: status });
 
   return (
     <div className="flex flex-col w-64 shrink-0">
-      {/* Column header */}
       <div className="flex items-center gap-2 mb-3">
         <span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${STATUS_STYLES[status]}`}>
           {STATUS_LABELS[status]}
@@ -37,7 +37,6 @@ export default function KanbanColumn({ status, issues }: Props) {
         <span className="text-xs text-gray-400">{issues.length}</span>
       </div>
 
-      {/* Drop zone */}
       <div
         ref={setNodeRef}
         className={`flex flex-col gap-2 min-h-24 rounded-xl p-2 transition-colors ${
@@ -49,7 +48,7 @@ export default function KanbanColumn({ status, issues }: Props) {
           strategy={verticalListSortingStrategy}
         >
           {issues.map((issue) => (
-            <KanbanCard key={issue.id} issue={issue} />
+            <KanbanCard key={issue.id} issue={issue} projectId={projectId} /> // ← thêm projectId
           ))}
         </SortableContext>
 

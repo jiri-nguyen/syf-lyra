@@ -1,5 +1,6 @@
 import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
+import { Link } from "react-router-dom";
 import type { Issue } from "../../api/issues";
 
 const PRIORITY_COLORS: Record<Issue["priority"], string> = {
@@ -12,9 +13,10 @@ const PRIORITY_COLORS: Record<Issue["priority"], string> = {
 
 interface Props {
   issue: Issue;
+  projectId: string; // thêm mới
 }
 
-export default function KanbanCard({ issue }: Props) {
+export default function KanbanCard({ issue, projectId }: Props) {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } =
     useSortable({ id: issue.id });
 
@@ -28,12 +30,28 @@ export default function KanbanCard({ issue }: Props) {
     <div
       ref={setNodeRef}
       style={style}
-      {...attributes}
-      {...listeners}
-      className="bg-white border rounded-lg px-3 py-2.5 shadow-sm cursor-grab active:cursor-grabbing select-none"
+      className="bg-white border rounded-lg px-3 py-2.5 shadow-sm select-none"
     >
-      <p className="text-sm text-gray-800 leading-snug">{issue.title}</p>
-      <div className="flex items-center gap-2 mt-2">
+      <div className="flex items-start gap-2">
+        {/* Drag handle — chỉ phần này mới kéo được */}
+        <div
+          {...attributes}
+          {...listeners}
+          className="mt-0.5 cursor-grab active:cursor-grabbing text-gray-300 hover:text-gray-400 shrink-0"
+        >
+          ⠿
+        </div>
+
+        {/* Title — click để navigate */}
+        <Link
+          to={`/projects/${projectId}/issues/${issue.id}`}
+          className="flex-1 text-sm text-gray-800 hover:text-blue-600 leading-snug"
+        >
+          {issue.title}
+        </Link>
+      </div>
+
+      <div className="flex items-center gap-2 mt-2 pl-5">
         <span className={`text-xs px-1.5 py-0.5 rounded font-medium ${PRIORITY_COLORS[issue.priority]}`}>
           {issue.priority.replace("_", " ")}
         </span>

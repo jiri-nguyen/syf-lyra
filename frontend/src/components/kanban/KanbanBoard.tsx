@@ -31,7 +31,6 @@ export default function KanbanBoard({ projectId, issues }: Props) {
   const queryClient = useQueryClient();
   const [activeIssue, setActiveIssue] = useState<Issue | null>(null);
 
-  // PointerSensor với distance 5px — tránh trigger drag khi chỉ click
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 5 } })
   );
@@ -66,15 +65,12 @@ export default function KanbanBoard({ projectId, issues }: Props) {
     const draggedIssue = issues.find((i) => i.id === active.id);
     if (!draggedIssue) return;
 
-    // over.id có thể là status (khi drop vào cột trống)
-    // hoặc issue id (khi drop vào vị trí có issue khác)
     const targetStatus = STATUSES.includes(over.id as Issue["status"])
       ? (over.id as Issue["status"])
       : issues.find((i) => i.id === over.id)?.status;
 
     if (!targetStatus || draggedIssue.status === targetStatus) return;
 
-    // Optimistic update — cập nhật UI ngay trước khi API trả về
     queryClient.setQueryData<Issue[]>(["issues", projectId], (old = []) =>
       old.map((i) => (i.id === draggedIssue.id ? { ...i, status: targetStatus } : i))
     );
@@ -94,15 +90,15 @@ export default function KanbanBoard({ projectId, issues }: Props) {
             key={status}
             status={status}
             issues={issuesByStatus[status]}
+            projectId={projectId} // ← thêm
           />
         ))}
       </div>
 
-      {/* Card ghost khi đang kéo */}
       <DragOverlay>
         {activeIssue && (
           <div className="rotate-2 scale-105">
-            <KanbanCard issue={activeIssue} />
+            <KanbanCard issue={activeIssue} projectId={projectId} /> // ← thêm
           </div>
         )}
       </DragOverlay>

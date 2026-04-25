@@ -5,6 +5,7 @@ import IssuesPage from "./pages/IssuesPage";
 import ProtectedRoute from "./components/ProtectedRoute";
 import KanbanPage from "./pages/KanbanPage";
 import MembersPage from "./pages/MembersPage";
+import IssueDetailPage from "./pages/IssueDetailPage";
 
 const queryClient = new QueryClient();
 
@@ -36,6 +37,14 @@ export default function App() {
             element={
               <ProtectedRoute>
                 <MembersPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/projects/:projectId/issues/:issueId"
+            element={
+              <ProtectedRoute>
+                <IssueDetailPage />
               </ProtectedRoute>
             }
           />
