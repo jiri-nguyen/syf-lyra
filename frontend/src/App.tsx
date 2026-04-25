@@ -4,6 +4,7 @@ import LoginPage from "./pages/LoginPage";
 import IssuesPage from "./pages/IssuesPage";
 import ProtectedRoute from "./components/ProtectedRoute";
 import KanbanPage from "./pages/KanbanPage";
+import MembersPage from "./pages/MembersPage";
 
 const queryClient = new QueryClient();
 
@@ -27,6 +28,14 @@ export default function App() {
             element={
               <ProtectedRoute>
                 <KanbanPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/workspaces/:workspaceId/members"
+            element={
+              <ProtectedRoute>
+                <MembersPage />
               </ProtectedRoute>
             }
           />

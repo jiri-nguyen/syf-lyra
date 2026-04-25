@@ -66,3 +66,62 @@ async def update(
     await db.commit()
     await db.refresh(workspace)
     return workspace
+
+
+async def get_member(
+    db: AsyncSession,
+    workspace_id: uuid.UUID,
+    user_id: uuid.UUID,
+) -> WorkspaceMember | None:
+    result = await db.execute(
+        select(WorkspaceMember).where(
+            WorkspaceMember.workspace_id == workspace_id,
+            WorkspaceMember.user_id == user_id,
+        )
+    )
+    return result.scalar_one_or_none()
+
+
+async def list_members(
+    db: AsyncSession,
+    workspace_id: uuid.UUID,
+) -> list[WorkspaceMember]:
+    result = await db.execute(
+        select(WorkspaceMember)
+        .where(WorkspaceMember.workspace_id == workspace_id)
+        .order_by(WorkspaceMember.joined_at.asc())
+    )
+    return list(result.scalars().all())
+
+
+async def add_member(
+    db: AsyncSession,
+    workspace_id: uuid.UUID,
+    user_id: uuid.UUID,
+    role: str = "member",
+) -> WorkspaceMember:
+    member = WorkspaceMember(
+        workspace_id=workspace_id,
+        user_id=user_id,
+        role=role,
+    )
+    db.add(member)
+    await db.commit()
+    await db.refresh(member)
+    return member
+
+
+async def update_member_role(
+    db: AsyncSession,
+    member: WorkspaceMember,
+    role: str,
+) -> WorkspaceMember:
+    member.role = role
+    await db.commit()
+    await db.refresh(member)
+    return member
+
+
+async def remove_member(db: AsyncSession, member: WorkspaceMember) -> None:
+    await db.delete(member)
+    await db.commit()

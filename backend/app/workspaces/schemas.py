@@ -1,7 +1,8 @@
 import uuid
 from datetime import datetime
+from typing import Literal
 
-from pydantic import BaseModel, field_validator
+from pydantic import BaseModel, EmailStr, field_validator
 
 
 class WorkspaceCreate(BaseModel):
@@ -29,3 +30,25 @@ class WorkspaceRead(BaseModel):
 
 class WorkspaceUpdate(BaseModel):
     name: str | None = None
+
+
+class MemberRead(BaseModel):
+    user_id: uuid.UUID
+    workspace_id: uuid.UUID
+    role: str
+    joined_at: datetime
+
+    # thông tin user đính kèm — tránh phải gọi API thêm
+    email: str
+    full_name: str
+    avatar_url: str | None = None
+
+    model_config = {"from_attributes": True}
+
+
+class MemberInvite(BaseModel):
+    email: EmailStr
+
+
+class MemberUpdateRole(BaseModel):
+    role: Literal["admin", "member"]

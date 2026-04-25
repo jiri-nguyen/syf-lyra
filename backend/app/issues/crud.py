@@ -10,12 +10,23 @@ from app.issues.schemas import IssueCreate, IssueUpdate
 async def list_by_project(
     db: AsyncSession,
     project_id: uuid.UUID,
+    status: list[str] | None = None,
+    priority: list[str] | None = None,
+    assignee_id: uuid.UUID | None = None,
 ) -> list[Issue]:
-    result = await db.execute(
+    query = (
         select(Issue)
         .where(Issue.project_id == project_id)
         .order_by(Issue.sort_order.asc(), Issue.created_at.asc())
     )
+    if status:
+        query = query.where(Issue.status.in_(status))
+    if priority:
+        query = query.where(Issue.priority.in_(priority))
+    if assignee_id:
+        query = query.where(Issue.assignee_id == assignee_id)
+
+    result = await db.execute(query)
     return list(result.scalars().all())
 
 

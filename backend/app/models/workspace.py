@@ -3,11 +3,12 @@ from __future__ import annotations
 import uuid
 from typing import TYPE_CHECKING
 
-from sqlalchemy import ForeignKey, String
+from sqlalchemy import ForeignKey, String, DateTime, func
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.models.base import Base, TimestampMixin
+from datetime import datetime
 
 if TYPE_CHECKING:
     from app.models.label import Label
@@ -53,6 +54,12 @@ class WorkspaceMember(Base):
         String(20), nullable=False, default="member"
     )
     # role values: "admin" | "member"
+
+    joined_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True),
+        server_default=func.now(),
+        nullable=False,
+    )
 
     # relationships
     workspace: Mapped["Workspace"] = relationship(back_populates="members")

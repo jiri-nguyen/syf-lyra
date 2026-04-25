@@ -5,6 +5,7 @@ from app.users.router import router as users_router
 from app.workspaces.router import router as workspaces_router
 from app.projects.router import router as projects_router
 from app.issues.router import router as issues_router
+from app.members.router import router as members_router
 
 app = FastAPI(title="Linear Clone")
 
@@ -13,6 +14,7 @@ app.include_router(users_router)
 app.include_router(workspaces_router)
 app.include_router(projects_router)
 app.include_router(issues_router)
+app.include_router(members_router)
 
 
 @app.get("/health")
