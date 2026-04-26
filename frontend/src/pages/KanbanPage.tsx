@@ -9,15 +9,8 @@ import { useProjectWebSocket } from "../hooks/useProjectWebSocket";
 
 export default function KanbanPage() {
   const { projectId, workspaceId } = useParams<{ projectId: string; workspaceId: string }>();
-  const {
-    filters,
-    toggleStatus,
-    togglePriority,
-    toggleLabel,
-    reset,
-    hasActiveFilters,
-    toQueryParams,
-  } = useIssueFilter();
+  const { filters, toggleStatus, togglePriority, toggleLabel, reset, hasActiveFilters, toQueryParams } =
+    useIssueFilter();
 
   const { data: issues = [], isLoading, isError } = useQuery({
     queryKey: ["issues", projectId, filters],
@@ -33,23 +26,37 @@ export default function KanbanPage() {
     enabled: !!workspaceId,
   });
 
-  if (isLoading) return (
-    <div className="min-h-screen flex items-center justify-center text-gray-400">
-      Loading...
-    </div>
-  );
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center h-64" style={{ color: "var(--text-tertiary)" }}>
+        Loading...
+      </div>
+    );
+  }
 
-  if (isError) return (
-    <div className="min-h-screen flex items-center justify-center text-red-500">
-      Không thể tải issues.
-    </div>
-  );
+  if (isError) {
+    return (
+      <div className="flex items-center justify-center h-64 text-red-500 text-sm">
+        Failed to load issues.
+      </div>
+    );
+  }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <div className="px-6 py-6">
-        <h1 className="text-xl font-semibold text-gray-900 mb-4">Board</h1>
-
+    <div className="flex flex-col h-full">
+      {/* Toolbar */}
+      <div
+        className="flex items-center justify-between px-6 py-3 shrink-0"
+        style={{ borderBottom: "1px solid var(--border)" }}
+      >
+        <div className="flex items-center gap-2">
+          <h1 className="text-sm font-semibold" style={{ color: "var(--text-primary)" }}>
+            Board
+          </h1>
+          <span className="text-xs" style={{ color: "var(--text-tertiary)" }}>
+            {issues.length}
+          </span>
+        </div>
         <FilterBar
           filters={filters}
           onToggleStatus={toggleStatus}
@@ -59,10 +66,11 @@ export default function KanbanPage() {
           hasActiveFilters={hasActiveFilters}
           labels={labels}
         />
+      </div>
 
-        <div className="mt-6">
-          <KanbanBoard workspaceId={workspaceId!} projectId={projectId!} issues={issues} />
-        </div>
+      {/* Board */}
+      <div className="flex-1 overflow-auto px-6 pt-5">
+        <KanbanBoard workspaceId={workspaceId!} projectId={projectId!} issues={issues} />
       </div>
     </div>
   );

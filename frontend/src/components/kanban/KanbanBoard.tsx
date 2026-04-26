@@ -80,12 +80,8 @@ export default function KanbanBoard({ workspaceId, projectId, issues }: Props) {
   };
 
   return (
-    <DndContext
-      sensors={sensors}
-      onDragStart={handleDragStart}
-      onDragEnd={handleDragEnd}
-    >
-      <div className="flex gap-4 overflow-x-auto pb-4">
+    <DndContext sensors={sensors} onDragStart={handleDragStart} onDragEnd={handleDragEnd}>
+      <div className="flex gap-5 overflow-x-auto pb-6 pr-4">
         {STATUSES.map((status) => (
           <KanbanColumn
             key={status}
@@ -97,9 +93,16 @@ export default function KanbanBoard({ workspaceId, projectId, issues }: Props) {
         ))}
       </div>
 
-      <DragOverlay>
+      <DragOverlay dropAnimation={null}>
         {activeIssue && (
-          <div className="rotate-2 scale-105">
+          <div
+            className="rotate-1 scale-[1.02]"
+            style={{
+              boxShadow: "0 20px 40px rgba(0,0,0,0.15)",
+              outline: "2px solid rgba(94,106,210,0.3)",
+              borderRadius: "8px",
+            }}
+          >
             <KanbanCard issue={activeIssue} workspaceId={workspaceId} projectId={projectId} />
           </div>
         )}
