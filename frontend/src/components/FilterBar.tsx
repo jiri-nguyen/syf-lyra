@@ -1,4 +1,5 @@
 import type { Issue } from "../api/issues";
+import type { Label } from "../api/labels";
 import type { IssueFilters } from "../hooks/useIssueFilter";
 
 const STATUSES: { value: Issue["status"]; label: string; color: string }[] = [
@@ -21,16 +22,20 @@ interface Props {
   filters: IssueFilters;
   onToggleStatus: (value: Issue["status"]) => void;
   onTogglePriority: (value: Issue["priority"]) => void;
+  onToggleLabel: (id: string) => void;
   onReset: () => void;
   hasActiveFilters: boolean;
+  labels?: Label[];
 }
 
 export default function FilterBar({
   filters,
   onToggleStatus,
   onTogglePriority,
+  onToggleLabel,
   onReset,
   hasActiveFilters,
+  labels = [],
 }: Props) {
   return (
     <div className="flex flex-wrap items-center gap-4 py-3 border-b border-gray-100">
@@ -56,7 +61,6 @@ export default function FilterBar({
         })}
       </div>
 
-      {/* Divider */}
       <div className="w-px h-5 bg-gray-200" />
 
       {/* Priority filters */}
@@ -79,6 +83,37 @@ export default function FilterBar({
           );
         })}
       </div>
+
+      {/* Label filters */}
+      {labels.length > 0 && (
+        <>
+          <div className="w-px h-5 bg-gray-200" />
+          <div className="flex items-center gap-1.5">
+            <span className="text-xs text-gray-400 font-medium mr-1">Label</span>
+            {labels.map((label) => {
+              const active = filters.label_ids.includes(label.id);
+              return (
+                <button
+                  key={label.id}
+                  onClick={() => onToggleLabel(label.id)}
+                  className={`text-xs px-2.5 py-1 rounded-full border font-medium transition-all ${
+                    active
+                      ? "ring-2 ring-offset-1"
+                      : "bg-white text-gray-400 border-gray-200 hover:border-gray-300"
+                  }`}
+                  style={
+                    active
+                      ? { backgroundColor: label.color + "22", color: label.color, borderColor: label.color }
+                      : {}
+                  }
+                >
+                  {label.name}
+                </button>
+              );
+            })}
+          </div>
+        </>
+      )}
 
       {/* Reset */}
       {hasActiveFilters && (

@@ -19,10 +19,11 @@ async def list_issues(
     status: Annotated[list[IssueStatus] | None, Query()] = None,
     priority: Annotated[list[IssuePriority] | None, Query()] = None,
     assignee_id: uuid.UUID | None = None,
+    label_id: Annotated[list[uuid.UUID] | None, Query()] = None,
     current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ):
-    return await crud.list_by_project(db, project_id, status, priority, assignee_id)
+    return await crud.list_by_project(db, project_id, status, priority, assignee_id, label_id)
 
 
 @router.post("", response_model=IssueRead, status_code=status.HTTP_201_CREATED)

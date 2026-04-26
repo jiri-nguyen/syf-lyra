@@ -11,6 +11,14 @@ export interface Issue {
   created_at: string;
 }
 
+export interface IssueDetail extends Issue {
+  project_id: string;
+  workspace_id: string | null;
+  description: string | null;
+  created_by: string;
+  updated_at: string;
+}
+
 export interface IssueCreate {
   title: string;
   status?: Issue["status"];
@@ -27,15 +35,15 @@ export const listIssues = (
 };
 
 export const createIssue = (projectId: string, data: IssueCreate) =>
-  client.post<Issue>(`/projects/${projectId}/issues`, data).then((r) => r.data);
+  client.post<IssueDetail>(`/projects/${projectId}/issues`, data).then((r) => r.data);
 
 export const updateIssue = (
   projectId: string,
   issueId: string,
-  data: Partial<IssueCreate>
+  data: Partial<IssueDetail>
 ) =>
   client
-    .patch<Issue>(`/projects/${projectId}/issues/${issueId}`, data)
+    .patch<IssueDetail>(`/projects/${projectId}/issues/${issueId}`, data)
     .then((r) => r.data);
 
 export const deleteIssue = (projectId: string, issueId: string) =>

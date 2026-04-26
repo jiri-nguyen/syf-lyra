@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useParams } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import LabelManager from "../components/LabelManager";
 import {
   listMembers,
   inviteMember,
@@ -179,6 +180,7 @@ export default function MembersPage() {
             </p>
           )}
         </div>
+        <LabelManager workspaceId={workspaceId!} />
       </div>
     </div>
   );

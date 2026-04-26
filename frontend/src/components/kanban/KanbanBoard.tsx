@@ -23,11 +23,12 @@ const STATUSES: Issue["status"][] = [
 ];
 
 interface Props {
+  workspaceId: string;
   projectId: string;
   issues: Issue[];
 }
 
-export default function KanbanBoard({ projectId, issues }: Props) {
+export default function KanbanBoard({ workspaceId, projectId, issues }: Props) {
   const queryClient = useQueryClient();
   const [activeIssue, setActiveIssue] = useState<Issue | null>(null);
 
@@ -90,7 +91,8 @@ export default function KanbanBoard({ projectId, issues }: Props) {
             key={status}
             status={status}
             issues={issuesByStatus[status]}
-            projectId={projectId} // ← thêm
+            workspaceId={workspaceId}
+            projectId={projectId}
           />
         ))}
       </div>
@@ -98,7 +100,7 @@ export default function KanbanBoard({ projectId, issues }: Props) {
       <DragOverlay>
         {activeIssue && (
           <div className="rotate-2 scale-105">
-            <KanbanCard issue={activeIssue} projectId={projectId} /> // ← thêm
+            <KanbanCard issue={activeIssue} workspaceId={workspaceId} projectId={projectId} />
           </div>
         )}
       </DragOverlay>

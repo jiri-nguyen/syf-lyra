@@ -2,6 +2,7 @@ import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import { Link } from "react-router-dom";
 import type { Issue } from "../../api/issues";
+import LabelPicker from "../LabelPicker";
 
 const PRIORITY_COLORS: Record<Issue["priority"], string> = {
   no_priority: "bg-gray-100 text-gray-400",
@@ -13,10 +14,11 @@ const PRIORITY_COLORS: Record<Issue["priority"], string> = {
 
 interface Props {
   issue: Issue;
-  projectId: string; // thêm mới
+  workspaceId: string;
+  projectId: string;
 }
 
-export default function KanbanCard({ issue, projectId }: Props) {
+export default function KanbanCard({ issue, workspaceId, projectId }: Props) {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } =
     useSortable({ id: issue.id });
 
@@ -44,7 +46,7 @@ export default function KanbanCard({ issue, projectId }: Props) {
 
         {/* Title — click để navigate */}
         <Link
-          to={`/projects/${projectId}/issues/${issue.id}`}
+          to={`/workspaces/${workspaceId}/projects/${projectId}/issues/${issue.id}`}
           className="flex-1 text-sm text-gray-800 hover:text-blue-600 leading-snug"
         >
           {issue.title}
@@ -60,6 +62,10 @@ export default function KanbanCard({ issue, projectId }: Props) {
             {new Date(issue.due_date).toLocaleDateString("vi-VN")}
           </span>
         )}
+      </div>
+
+      <div className="mt-2 pl-5" onClick={(e) => e.stopPropagation()}>
+        <LabelPicker issueId={issue.id} workspaceId={workspaceId} />
       </div>
     </div>
   );

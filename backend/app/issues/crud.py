@@ -2,6 +2,7 @@ import uuid
 
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.orm import selectinload
 
 from app.models.issue import Issue
 from app.issues.schemas import IssueCreate, IssueUpdate
@@ -13,6 +14,7 @@ async def list_by_project(
     status: list[str] | None = None,
     priority: list[str] | None = None,
     assignee_id: uuid.UUID | None = None,
+    label_ids: list[uuid.UUID] | None = None,
 ) -> list[Issue]:
     query = (
         select(Issue)
@@ -25,13 +27,22 @@ async def list_by_project(
         query = query.where(Issue.priority.in_(priority))
     if assignee_id:
         query = query.where(Issue.assignee_id == assignee_id)
+    if label_ids:
+        from app.models.issue import issue_labels
+        query = query.join(issue_labels, issue_labels.c.issue_id == Issue.id).where(
+            issue_labels.c.label_id.in_(label_ids)
+        ).distinct()
 
     result = await db.execute(query)
     return list(result.scalars().all())
 
 
 async def get(db: AsyncSession, issue_id: uuid.UUID) -> Issue | None:
-    result = await db.execute(select(Issue).where(Issue.id == issue_id))
+    result = await db.execute(
+        select(Issue)
+        .options(selectinload(Issue.project))
+        .where(Issue.id == issue_id)
+    )
     return result.scalar_one_or_none()
 
 
@@ -59,8 +70,7 @@ async def create(
     )
     db.add(issue)
     await db.commit()
-    await db.refresh(issue)
-    return issue
+    return await get(db, issue.id)  # type: ignore[return-value]
 
 
 async def update(
@@ -72,8 +82,7 @@ async def update(
     for field, value in update_data.items():
         setattr(issue, field, value)
     await db.commit()
-    await db.refresh(issue)
-    return issue
+    return await get(db, issue.id)  # type: ignore[return-value]
 
 
 async def delete(db: AsyncSession, issue: Issue) -> None:

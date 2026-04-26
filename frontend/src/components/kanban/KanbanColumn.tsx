@@ -22,10 +22,11 @@ const STATUS_LABELS: Record<Issue["status"], string> = {
 interface Props {
   status: Issue["status"];
   issues: Issue[];
-  projectId: string; // ← thêm
+  workspaceId: string;
+  projectId: string;
 }
 
-export default function KanbanColumn({ status, issues, projectId }: Props) {
+export default function KanbanColumn({ status, issues, workspaceId, projectId }: Props) {
   const { setNodeRef, isOver } = useDroppable({ id: status });
 
   return (
@@ -48,7 +49,7 @@ export default function KanbanColumn({ status, issues, projectId }: Props) {
           strategy={verticalListSortingStrategy}
         >
           {issues.map((issue) => (
-            <KanbanCard key={issue.id} issue={issue} projectId={projectId} /> // ← thêm projectId
+            <KanbanCard key={issue.id} issue={issue} workspaceId={workspaceId} projectId={projectId} />
           ))}
         </SortableContext>
 

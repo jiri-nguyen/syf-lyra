@@ -96,3 +96,7 @@ class Issue(Base, TimestampMixin):
     notifications: Mapped[list["Notification"]] = relationship(
         back_populates="issue", cascade="all, delete-orphan"
     )
+
+    @property
+    def workspace_id(self) -> "uuid.UUID | None":
+        return self.project.workspace_id if self.project is not None else None

@@ -3,15 +3,16 @@ import { useParams, useNavigate } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { listComments, createComment, updateComment, deleteComment, type Comment } from "../api/comments";
 import client from "../api/client";
-import type { Issue } from "../api/issues";
+import type { Issue, IssueDetail } from "../api/issues";
+import LabelPicker from "../components/LabelPicker";
 
 // ── API calls ──────────────────────────────────────────────────────────────
 
 const getIssue = (projectId: string, issueId: string) =>
-  client.get<Issue>(`/projects/${projectId}/issues/${issueId}`).then((r) => r.data);
+  client.get<IssueDetail>(`/projects/${projectId}/issues/${issueId}`).then((r) => r.data);
 
-const patchIssue = (projectId: string, issueId: string, data: Partial<Issue>) =>
-  client.patch<Issue>(`/projects/${projectId}/issues/${issueId}`, data).then((r) => r.data);
+const patchIssue = (projectId: string, issueId: string, data: Partial<IssueDetail>) =>
+  client.patch<IssueDetail>(`/projects/${projectId}/issues/${issueId}`, data).then((r) => r.data);
 
 // ── Sub-components ─────────────────────────────────────────────────────────
 
@@ -195,7 +196,7 @@ function CommentItem({
 // ── Main page ──────────────────────────────────────────────────────────────
 
 export default function IssueDetailPage() {
-  const { projectId, issueId } = useParams<{ projectId: string; issueId: string }>();
+  const { workspaceId, projectId, issueId } = useParams<{ workspaceId: string; projectId: string; issueId: string }>();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [newComment, setNewComment] = useState("");
@@ -341,6 +342,11 @@ export default function IssueDetailPage() {
                     value={issue.priority}
                     onChange={(priority) => updateMutation.mutate({ priority })}
                   />
+                </div>
+
+                <div>
+                  <p className="text-xs text-gray-400 mb-1">Labels</p>
+                  <LabelPicker issueId={issueId!} workspaceId={workspaceId!} />
                 </div>
 
                 <div>

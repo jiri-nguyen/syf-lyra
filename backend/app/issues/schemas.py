@@ -43,6 +43,7 @@ class IssueListItem(BaseModel):
 class IssueRead(BaseModel):
     id: uuid.UUID
     project_id: uuid.UUID
+    workspace_id: uuid.UUID | None = None
     title: str
     description: str | None = None
     status: IssueStatus

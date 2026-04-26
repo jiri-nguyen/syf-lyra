@@ -1,16 +1,18 @@
 import { useQuery } from "@tanstack/react-query";
 import { useParams } from "react-router-dom";
 import { listIssues } from "../api/issues";
+import { listLabels } from "../api/labels";
 import KanbanBoard from "../components/kanban/KanbanBoard";
 import FilterBar from "../components/FilterBar";
 import { useIssueFilter } from "../hooks/useIssueFilter";
 
 export default function KanbanPage() {
-  const { projectId } = useParams<{ projectId: string }>();
+  const { projectId, workspaceId } = useParams<{ projectId: string; workspaceId: string }>();
   const {
     filters,
     toggleStatus,
     togglePriority,
+    toggleLabel,
     reset,
     hasActiveFilters,
     toQueryParams,
@@ -20,6 +22,12 @@ export default function KanbanPage() {
     queryKey: ["issues", projectId, filters],
     queryFn: () => listIssues(projectId!, toQueryParams()),
     enabled: !!projectId,
+  });
+
+  const { data: labels = [] } = useQuery({
+    queryKey: ["labels", workspaceId],
+    queryFn: () => listLabels(workspaceId!),
+    enabled: !!workspaceId,
   });
 
   if (isLoading) return (
@@ -43,12 +51,14 @@ export default function KanbanPage() {
           filters={filters}
           onToggleStatus={toggleStatus}
           onTogglePriority={togglePriority}
+          onToggleLabel={toggleLabel}
           onReset={reset}
           hasActiveFilters={hasActiveFilters}
+          labels={labels}
         />
 
         <div className="mt-6">
-          <KanbanBoard projectId={projectId!} issues={issues} />
+          <KanbanBoard workspaceId={workspaceId!} projectId={projectId!} issues={issues} />
         </div>
       </div>
     </div>

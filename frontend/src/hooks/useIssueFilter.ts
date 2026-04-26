@@ -5,12 +5,14 @@ export interface IssueFilters {
   status: Issue["status"][];
   priority: Issue["priority"][];
   assignee_id: string | null;
+  label_ids: string[];
 }
 
 const EMPTY_FILTERS: IssueFilters = {
   status: [],
   priority: [],
   assignee_id: null,
+  label_ids: [],
 };
 
 export function useIssueFilter() {
@@ -38,19 +40,29 @@ export function useIssueFilter() {
     setFilters((prev) => ({ ...prev, assignee_id: id }));
   }, []);
 
+  const toggleLabel = useCallback((id: string) => {
+    setFilters((prev) => ({
+      ...prev,
+      label_ids: prev.label_ids.includes(id)
+        ? prev.label_ids.filter((l) => l !== id)
+        : [...prev.label_ids, id],
+    }));
+  }, []);
+
   const reset = useCallback(() => setFilters(EMPTY_FILTERS), []);
 
   const hasActiveFilters =
     filters.status.length > 0 ||
     filters.priority.length > 0 ||
-    filters.assignee_id !== null;
+    filters.assignee_id !== null ||
+    filters.label_ids.length > 0;
 
-  // build query params để truyền vào API
   const toQueryParams = () => {
     const params = new URLSearchParams();
     filters.status.forEach((s) => params.append("status", s));
     filters.priority.forEach((p) => params.append("priority", p));
     if (filters.assignee_id) params.set("assignee_id", filters.assignee_id);
+    filters.label_ids.forEach((id) => params.append("label_id", id));
     return params;
   };
 
@@ -59,6 +71,7 @@ export function useIssueFilter() {
     toggleStatus,
     togglePriority,
     setAssignee,
+    toggleLabel,
     reset,
     hasActiveFilters,
     toQueryParams,

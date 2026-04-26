@@ -16,7 +16,7 @@ export default function LoginPage() {
     try {
       const { access_token } = await login({ email, password });
       localStorage.setItem("token", access_token);
-      navigate("/issues");
+      navigate("/workspaces");
     } catch {
       setError("Email hoặc mật khẩu không đúng");
     } finally {
