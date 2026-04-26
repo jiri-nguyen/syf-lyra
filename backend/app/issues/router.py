@@ -10,6 +10,7 @@ from app.dependencies import get_current_user
 from app.issues import crud
 from app.issues.schemas import IssueCreate, IssueListItem, IssueRead, IssuePriority, IssueStatus, IssueUpdate
 from app.models.user import User
+from app.notifications import crud as notif_crud
 
 router = APIRouter(prefix="/projects/{project_id}/issues", tags=["issues"])
 
@@ -78,7 +79,19 @@ async def update_issue(
     issue = await crud.get(db, issue_id)
     if not issue or issue.project_id != project_id:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Issue not found")
+
+    old_assignee_id = issue.assignee_id
     updated = await crud.update(db, issue, data)
+
+    # Tạo notification khi assign cho người khác
+    new_assignee_id = updated.assignee_id
+    if (
+        new_assignee_id
+        and new_assignee_id != old_assignee_id
+        and new_assignee_id != current_user.id
+    ):
+        await notif_crud.create(db, new_assignee_id, issue_id, "assigned")
+
     issue_data = IssueRead.model_validate(updated).model_dump(mode="json")
     await _publish(request, "issue.updated", project_id, issue_data)
     return updated

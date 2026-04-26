@@ -10,6 +10,7 @@ from app.config import settings
 from app.issues.router import router as issues_router
 from app.labels.router import router as labels_router
 from app.members.router import router as members_router
+from app.notifications.router import router as notifications_router
 from app.projects.router import router as projects_router
 from app.users.router import router as users_router
 from app.websockets.manager import redis_subscriber
@@ -38,6 +39,7 @@ app.include_router(issues_router)
 app.include_router(members_router)
 app.include_router(comments_router)
 app.include_router(labels_router)
+app.include_router(notifications_router)
 
 
 @app.get("/health")

@@ -6,12 +6,17 @@ import ProjectsPage from "./pages/ProjectsPage";
 import KanbanPage from "./pages/KanbanPage";
 import IssueDetailPage from "./pages/IssueDetailPage";
 import MembersPage from "./pages/MembersPage";
+import Layout from "./components/Layout";
 import ProtectedRoute from "./components/ProtectedRoute";
 
 const queryClient = new QueryClient();
 
 function Protected({ children }: { children: React.ReactNode }) {
-  return <ProtectedRoute>{children}</ProtectedRoute>;
+  return (
+    <ProtectedRoute>
+      <Layout>{children}</Layout>
+    </ProtectedRoute>
+  );
 }
 
 export default function App() {

@@ -10,6 +10,8 @@ from app.models.user import User
 from app.models.comment import Comment
 from app.comments.schemas import CommentCreate, CommentRead, CommentUpdate
 from app.comments import crud
+from app.issues import crud as issue_crud
+from app.notifications import crud as notif_crud
 
 router = APIRouter(prefix="/issues/{issue_id}/comments", tags=["comments"])
 
@@ -47,6 +49,12 @@ async def create_comment(
     db: AsyncSession = Depends(get_db),
 ):
     comment = await crud.create(db, issue_id, current_user.id, data)
+
+    # Tạo notification cho người tạo issue (nếu không phải chính mình đang comment)
+    issue = await issue_crud.get(db, issue_id)
+    if issue and issue.created_by != current_user.id:
+        await notif_crud.create(db, issue.created_by, issue_id, "commented")
+
     return await _build_comment_read(db, comment)
 
 
