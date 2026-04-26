@@ -5,6 +5,7 @@ import { listLabels } from "../api/labels";
 import KanbanBoard from "../components/kanban/KanbanBoard";
 import FilterBar from "../components/FilterBar";
 import { useIssueFilter } from "../hooks/useIssueFilter";
+import { useProjectWebSocket } from "../hooks/useProjectWebSocket";
 
 export default function KanbanPage() {
   const { projectId, workspaceId } = useParams<{ projectId: string; workspaceId: string }>();
@@ -23,6 +24,8 @@ export default function KanbanPage() {
     queryFn: () => listIssues(projectId!, toQueryParams()),
     enabled: !!projectId,
   });
+
+  useProjectWebSocket(projectId);
 
   const { data: labels = [] } = useQuery({
     queryKey: ["labels", workspaceId],
