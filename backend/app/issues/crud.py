@@ -1,10 +1,11 @@
 import uuid
 
-from sqlalchemy import select
+from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
 from app.models.issue import Issue
+from app.models.project import Project
 from app.issues.schemas import IssueCreate, IssueUpdate
 
 
@@ -52,7 +53,19 @@ async def create(
     created_by: uuid.UUID,
     data: IssueCreate,
 ) -> Issue:
-    # sort_order: đặt cuối danh sách trong cùng status
+    # Lock project row to serialize concurrent issue creation within the same project
+    await db.execute(
+        select(Project).where(Project.id == project_id).with_for_update()
+    )
+
+    # Next sequence_number for this project
+    seq_result = await db.execute(
+        select(func.coalesce(func.max(Issue.sequence_number), 0))
+        .where(Issue.project_id == project_id)
+    )
+    sequence_number = (seq_result.scalar() or 0) + 1
+
+    # sort_order: place at end within same status column
     result = await db.execute(
         select(Issue)
         .where(Issue.project_id == project_id, Issue.status == data.status)
@@ -66,6 +79,7 @@ async def create(
         project_id=project_id,
         created_by=created_by,
         sort_order=sort_order,
+        sequence_number=sequence_number,
         **data.model_dump(),
     )
     db.add(issue)

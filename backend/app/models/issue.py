@@ -4,7 +4,7 @@ import uuid
 from datetime import datetime
 from typing import TYPE_CHECKING
 
-from sqlalchemy import DateTime, ForeignKey, Integer, String, Table, Text, Column
+from sqlalchemy import DateTime, ForeignKey, Integer, String, Table, Text, Column, UniqueConstraint
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
@@ -38,6 +38,9 @@ issue_labels = Table(
 
 class Issue(Base, TimestampMixin):
     __tablename__ = "issues"
+    __table_args__ = (
+        UniqueConstraint("project_id", "sequence_number", name="uq_issue_project_sequence"),
+    )
 
     id: Mapped[uuid.UUID] = mapped_column(
         UUID(as_uuid=True), primary_key=True, default=uuid.uuid4
@@ -74,6 +77,7 @@ class Issue(Base, TimestampMixin):
     )
     sort_order: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
     # sort_order: controls display order within a Kanban column
+    sequence_number: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
 
     due_date: Mapped[datetime | None] = mapped_column(
         DateTime(timezone=True), nullable=True

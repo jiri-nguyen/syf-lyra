@@ -34,6 +34,7 @@ class IssueListItem(BaseModel):
     priority: IssuePriority
     assignee_id: uuid.UUID | None = None
     sort_order: int
+    sequence_number: int = 0
     due_date: datetime | None = None
     created_at: datetime
 
@@ -51,6 +52,7 @@ class IssueRead(BaseModel):
     assignee_id: uuid.UUID | None = None
     created_by: uuid.UUID
     sort_order: int
+    sequence_number: int = 0
     due_date: datetime | None = None
     created_at: datetime
     updated_at: datetime
