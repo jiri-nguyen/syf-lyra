@@ -6,6 +6,8 @@ from app.models.issue import Issue, issue_labels
 from app.models.comment import Comment
 from app.models.label import Label
 from app.models.notification import Notification
+from app.models.git_pull_request import GitPullRequest
+from app.models.git_commit import GitCommit
 
 __all__ = [
     "Base",
@@ -19,4 +21,6 @@ __all__ = [
     "Comment",
     "Label",
     "Notification",
+    "GitPullRequest",
+    "GitCommit",
 ]

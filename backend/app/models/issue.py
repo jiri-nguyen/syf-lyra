@@ -12,6 +12,8 @@ from app.models.base import Base, TimestampMixin
 
 if TYPE_CHECKING:
     from app.models.comment import Comment
+    from app.models.git_commit import GitCommit
+    from app.models.git_pull_request import GitPullRequest
     from app.models.label import Label
     from app.models.notification import Notification
     from app.models.project import Project
@@ -98,6 +100,12 @@ class Issue(Base, TimestampMixin):
         secondary=issue_labels, back_populates="issues"
     )
     notifications: Mapped[list["Notification"]] = relationship(
+        back_populates="issue", cascade="all, delete-orphan"
+    )
+    pull_requests: Mapped[list["GitPullRequest"]] = relationship(
+        back_populates="issue", cascade="all, delete-orphan"
+    )
+    commits: Mapped[list["GitCommit"]] = relationship(
         back_populates="issue", cascade="all, delete-orphan"
     )
 
