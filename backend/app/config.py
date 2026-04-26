@@ -23,6 +23,9 @@ class Settings(BaseSettings):
     ALGORITHM: str = "HS256"
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 60 * 24 * 7  # 7 days
 
+    # redis
+    REDIS_URL: str = "redis://127.0.0.1:6379"
+
     # app
     APP_ENV: Literal["development", "production", "test"] = "development"
     DEBUG: bool = True
