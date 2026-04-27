@@ -30,6 +30,9 @@ class Settings(BaseSettings):
     APP_ENV: Literal["development", "production", "test"] = "development"
     DEBUG: bool = True
 
+    # github webhook
+    GITHUB_WEBHOOK_SECRET: str = ""  # Set in production via env var
+
     def get_postgres_dsn(self, driver: Literal["asyncpg", "psycopg2"]) -> str:
         return str(
             PostgresDsn.build(

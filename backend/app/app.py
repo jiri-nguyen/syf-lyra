@@ -15,6 +15,7 @@ from app.projects.router import router as projects_router
 from app.users.router import router as users_router
 from app.websockets.manager import redis_subscriber
 from app.websockets.router import router as ws_router
+from app.webhooks.router import router as webhooks_router
 from app.workspaces.router import router as workspaces_router
 
 
@@ -40,6 +41,7 @@ app.include_router(members_router)
 app.include_router(comments_router)
 app.include_router(labels_router)
 app.include_router(notifications_router)
+app.include_router(webhooks_router)
 
 
 @app.get("/health")
