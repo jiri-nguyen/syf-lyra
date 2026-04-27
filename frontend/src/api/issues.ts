@@ -7,6 +7,7 @@ export interface Issue {
   priority: "no_priority" | "urgent" | "high" | "medium" | "low";
   assignee_id: string | null;
   sort_order: number;
+  sequence_number: number;
   due_date: string | null;
   created_at: string;
 }
