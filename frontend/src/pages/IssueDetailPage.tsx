@@ -2,6 +2,7 @@ import { useState, useRef, useEffect } from "react";
 import { useParams } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { listComments, createComment, updateComment, deleteComment, type Comment } from "../api/comments";
+import { listIssuePullRequests, listIssueCommits, type GitPullRequest, type GitCommit } from "../api/git";
 import { listProjects } from "../api/projects";
 import { getMe } from "../api/auth";
 import client from "../api/client";
@@ -348,6 +349,132 @@ function PropertyRow({ label, children }: { label: string; children: React.React
   );
 }
 
+// ── Git components ─────────────────────────────────────────────────────────
+
+const PR_STATE_STYLES: Record<GitPullRequest["state"], { bg: string; color: string; label: string }> = {
+  open:   { bg: "rgba(16,185,129,0.1)",  color: "#10b981", label: "Open"   },
+  merged: { bg: "rgba(139,92,246,0.1)",  color: "#8b5cf6", label: "Merged" },
+  closed: { bg: "rgba(239,68,68,0.1)",   color: "#ef4444", label: "Closed" },
+};
+
+function GitPRCard({ pr }: { pr: GitPullRequest }) {
+  const style = PR_STATE_STYLES[pr.state];
+
+  return (
+    <div
+      className="rounded-lg px-4 py-3 flex flex-col gap-2"
+      style={{ border: "1px solid var(--border)", backgroundColor: "var(--content-bg)" }}
+    >
+      {/* Title row */}
+      <div className="flex items-start justify-between gap-3">
+        <div className="flex items-start gap-2 min-w-0">
+          {/* PR icon */}
+          <svg className="w-4 h-4 shrink-0 mt-0.5" viewBox="0 0 16 16" fill="currentColor" style={{ color: "var(--text-tertiary)" }}>
+            <path d="M7.177 3.073L9.573.677A.25.25 0 0 1 10 .854v4.792a.25.25 0 0 1-.427.177L7.177 3.427a.25.25 0 0 1 0-.354zM3.75 2.5a.75.75 0 1 0 0 1.5.75.75 0 0 0 0-1.5zm-2.25.75a2.25 2.25 0 1 1 3 2.122v5.256a2.251 2.251 0 1 1-1.5 0V5.372A2.25 2.25 0 0 1 1.5 3.25zM11 2.5h-1V4h1a1 1 0 0 1 1 1v5.628a2.251 2.251 0 1 0 1.5 0V5A2.5 2.5 0 0 0 11 2.5zm1 10.25a.75.75 0 1 1 1.5 0 .75.75 0 0 1-1.5 0zM3.75 12a.75.75 0 1 0 0 1.5.75.75 0 0 0 0-1.5z" />
+          </svg>
+          <span className="text-sm font-medium truncate" style={{ color: "var(--text-primary)" }}>
+            {pr.title}
+          </span>
+        </div>
+        <span className="text-xs shrink-0 font-mono" style={{ color: "var(--text-tertiary)" }}>
+          #{pr.pr_number}
+        </span>
+      </div>
+
+      {/* Branch + state + meta row */}
+      <div className="flex items-center gap-2 flex-wrap">
+        <span
+          className="text-xs font-mono px-1.5 py-0.5 rounded"
+          style={{ backgroundColor: "var(--content-alt)", color: "var(--text-tertiary)" }}
+        >
+          {pr.branch_name}
+        </span>
+        <span
+          className="text-xs px-2 py-0.5 rounded-full font-medium"
+          style={{ backgroundColor: style.bg, color: style.color }}
+        >
+          {style.label}
+        </span>
+        <span className="text-xs ml-auto flex items-center gap-1.5" style={{ color: "var(--text-tertiary)" }}>
+          {pr.author_login && (
+            <>
+              {pr.author_avatar
+                ? <img src={pr.author_avatar} alt={pr.author_login} className="w-4 h-4 rounded-full" />
+                : <span className="w-4 h-4 rounded-full flex items-center justify-center text-[9px] text-white font-bold" style={{ backgroundColor: "var(--accent)" }}>{pr.author_login[0].toUpperCase()}</span>
+              }
+              <span>{pr.author_login}</span>
+              <span>·</span>
+            </>
+          )}
+          <span>{timeAgo(pr.merged_at ?? pr.created_at)}</span>
+          <a
+            href={pr.url}
+            target="_blank"
+            rel="noreferrer"
+            className="ml-1 transition-colors"
+            style={{ color: "var(--text-tertiary)" }}
+            onMouseEnter={(e) => (e.currentTarget.style.color = "var(--accent)")}
+            onMouseLeave={(e) => (e.currentTarget.style.color = "var(--text-tertiary)")}
+            title="Open on GitHub"
+          >
+            <svg className="w-3.5 h-3.5" viewBox="0 0 16 16" fill="currentColor">
+              <path d="M6.22 8.72a.75.75 0 0 0 1.06 1.06l5.22-5.22v1.69a.75.75 0 0 0 1.5 0v-3.5a.75.75 0 0 0-.75-.75h-3.5a.75.75 0 0 0 0 1.5h1.69L6.22 8.72z" />
+              <path d="M3.5 6.75a.75.75 0 0 0-1.5 0v6a.75.75 0 0 0 .75.75h9a.75.75 0 0 0 .75-.75v-3.5a.75.75 0 0 0-1.5 0v2.75h-7.5V6.75z" />
+            </svg>
+          </a>
+        </span>
+      </div>
+    </div>
+  );
+}
+
+function GitCommitRow({ commit }: { commit: GitCommit }) {
+  const initials = (commit.author_name ?? "?")[0].toUpperCase();
+
+  return (
+    <div className="flex items-center gap-3 py-2" style={{ borderBottom: "1px solid var(--border-subtle)" }}>
+      {commit.author_avatar
+        ? <img src={commit.author_avatar} alt={commit.author_name ?? ""} className="w-5 h-5 rounded-full shrink-0" />
+        : (
+          <span
+            className="w-5 h-5 rounded-full flex items-center justify-center text-[9px] text-white font-bold shrink-0"
+            style={{ backgroundColor: "var(--text-tertiary)" }}
+          >
+            {initials}
+          </span>
+        )
+      }
+      <span
+        className="text-xs font-mono shrink-0 px-1.5 py-0.5 rounded"
+        style={{ backgroundColor: "var(--content-alt)", color: "var(--text-tertiary)" }}
+      >
+        {commit.short_sha}
+      </span>
+      <span className="flex-1 text-xs truncate" style={{ color: "var(--text-secondary)" }}>
+        {commit.message.split("\n")[0]}
+      </span>
+      <span className="text-xs shrink-0" style={{ color: "var(--text-tertiary)" }}>
+        {commit.committed_at ? timeAgo(commit.committed_at) : ""}
+      </span>
+      <a
+        href={commit.url}
+        target="_blank"
+        rel="noreferrer"
+        className="shrink-0 transition-colors"
+        style={{ color: "var(--text-tertiary)" }}
+        onMouseEnter={(e) => (e.currentTarget.style.color = "var(--accent)")}
+        onMouseLeave={(e) => (e.currentTarget.style.color = "var(--text-tertiary)")}
+        title="View on GitHub"
+      >
+        <svg className="w-3.5 h-3.5" viewBox="0 0 16 16" fill="currentColor">
+          <path d="M6.22 8.72a.75.75 0 0 0 1.06 1.06l5.22-5.22v1.69a.75.75 0 0 0 1.5 0v-3.5a.75.75 0 0 0-.75-.75h-3.5a.75.75 0 0 0 0 1.5h1.69L6.22 8.72z" />
+          <path d="M3.5 6.75a.75.75 0 0 0-1.5 0v6a.75.75 0 0 0 .75.75h9a.75.75 0 0 0 .75-.75v-3.5a.75.75 0 0 0-1.5 0v2.75h-7.5V6.75z" />
+        </svg>
+      </a>
+    </div>
+  );
+}
+
 // ── Main page ──────────────────────────────────────────────────────────────
 
 export default function IssueDetailPage() {
@@ -383,7 +510,20 @@ export default function IssueDetailPage() {
     staleTime: 5 * 60 * 1000,
   });
 
+  const { data: pullRequests = [] } = useQuery({
+    queryKey: ["git-prs", issueId],
+    queryFn: () => listIssuePullRequests(issueId!),
+    enabled: !!issueId,
+  });
+
+  const { data: commits = [] } = useQuery({
+    queryKey: ["git-commits", issueId],
+    queryFn: () => listIssueCommits(issueId!),
+    enabled: !!issueId,
+  });
+
   const project = projects.find((p) => p.id === projectId);
+  const hasGitData = pullRequests.length > 0 || commits.length > 0;
 
   const updateMutation = useMutation({
     mutationFn: (data: Partial<IssueDetail>) => patchIssue(projectId!, issueId!, data),
@@ -518,6 +658,24 @@ export default function IssueDetailPage() {
             </div>
           </div>
         </div>
+
+        {hasGitData && (
+          <div className="mt-8">
+            <p className="text-xs font-medium mb-4 uppercase tracking-wider" style={{ color: "var(--text-tertiary)" }}>
+              Git
+            </p>
+            {pullRequests.length > 0 && (
+              <div className="flex flex-col gap-2 mb-4">
+                {pullRequests.map((pr) => <GitPRCard key={pr.id} pr={pr} />)}
+              </div>
+            )}
+            {commits.length > 0 && (
+              <div>
+                {commits.map((commit) => <GitCommitRow key={commit.id} commit={commit} />)}
+              </div>
+            )}
+          </div>
+        )}
       </div>
 
       {/* ── Properties sidebar ── */}
