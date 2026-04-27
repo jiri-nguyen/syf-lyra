@@ -8,6 +8,7 @@ from app.auth.router import router as auth_router
 from app.comments.router import router as comments_router
 from app.config import settings
 from app.issues.router import router as issues_router
+from app.issues.git_router import router as issues_git_router
 from app.labels.router import router as labels_router
 from app.members.router import router as members_router
 from app.notifications.router import router as notifications_router
@@ -41,6 +42,7 @@ app.include_router(members_router)
 app.include_router(comments_router)
 app.include_router(labels_router)
 app.include_router(notifications_router)
+app.include_router(issues_git_router)
 app.include_router(webhooks_router)
 
 
